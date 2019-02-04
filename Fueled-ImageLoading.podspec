@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name = 'Heymansmile-ImageLoading'
+  s.name = 'Fueled-ImageLoading'
   s.version = '0.3'
   s.summary = 'Async image loading.'
   s.homepage = 'https://github.com/heymansmile/ImageLoading'
