@@ -26,7 +26,7 @@ public final class ImageLoading {
 		return taskWithRequest(URLRequest(url: url))
 	}
 
-	public func taskWithRequest(_ request: URLRequest) -> Task {
+	public func taskWithRequest(_ request: URLRequest, parseData: @escaping (Data) -> UIImage? = { UIImage(data: $0) } ) -> Task {
 		let url = request.url!.absoluteString
 		if let task = self.cache.storage[url] {
 			return task
@@ -34,7 +34,7 @@ public final class ImageLoading {
 			let task = Task()
 			task.retry = { [weak self, weak task] in
 				if let this = self, let task = task, task.isUndefinedOrFailed {
-					this.startTask(task, withRequest: request)
+					this.startTask(task, withRequest: request, parseData: parseData)
 				}
 			}
 			self.cache.storage[url] = task
@@ -54,7 +54,7 @@ public final class ImageLoading {
 		return nil
 	}
 
-	private func startTask(_ task: Task, withRequest request: URLRequest) {
+	private func startTask(_ task: Task, withRequest request: URLRequest, parseData: @escaping (Data) -> UIImage?) {
 		task.state = .loading
 		let op = URLSession.shared.dataTask(with: request) {
 			[weak task] data, response, error in
@@ -64,7 +64,7 @@ public final class ImageLoading {
 					return
 				}
 				state = .failure(error: error)
-			} else if let data = data, let image = UIImage(data: data) {
+			} else if let data = data, let image = parseData(data) {
 				state = .success(result: image)
 			} else {
 				state = .failure(error: Error.invalidFormat)
